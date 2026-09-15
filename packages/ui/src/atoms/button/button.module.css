@@ -1,0 +1,16 @@
+/* [S2-01] Стилей здесь почти нет: всё живёт в inline-style внутри button.tsx. */
+.button {
+  display: inline-block !important;
+  text-decoration: none;
+  outline: none;
+  transition: opacity 120ms ease;
+}
+
+.button:hover {
+  opacity: 0.85 !important;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}

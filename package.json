@@ -1,0 +1,29 @@
+{
+  "name": "nextjs-internal-review",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Стенд для интернал-ревью мидл-фронтенд разработчика: Next.js 16 + Fastify + Turborepo",
+  "packageManager": "pnpm@11.27.0",
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "test": "turbo run test --continue",
+    "test:core": "pnpm --filter @repo/core test:watch",
+    "test:contracts": "pnpm --filter @repo/contracts test:watch",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "db:seed": "pnpm --filter @repo/api db:seed",
+    "db:reset": "pnpm --filter @repo/api db:reset",
+    "tasks": "node scripts/tasks.mjs",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "2.10.13",
+    "typescript": "5.9.3"
+  }
+}

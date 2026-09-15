@@ -1,0 +1,25 @@
+node_modules/
+.turbo/
+.next/
+dist/
+build/
+out/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# local env
+.env.local
+.env*.local
+
+# sqlite
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+apps/api/data/
+
+.DS_Store
+*.log
+.vscode/
+.idea/

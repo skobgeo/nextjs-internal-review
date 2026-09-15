@@ -1,0 +1,10 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.required {
+  color: var(--color-danger);
+  margin-inline-start: var(--space-3xs);
+}

@@ -1,0 +1,67 @@
+/**
+ * [S2-02] Хиро-секция.
+ *
+ * Свёрстана под один конкретный монитор: фиксированные колонки, отступы и
+ * кегли в пикселях, ни одного брейкпоинта. На 320px появляется горизонтальный
+ * скролл, на 1440px+ контент жмётся в левый угол.
+ *
+ * Задача: перевести на резиновую вёрстку — grid с auto-подстройкой,
+ * `clamp()` для типографики и отступов, container query для внутренней
+ * перекладки. Медиазапросы по ширине окна допустимы, но подумайте,
+ * где уместнее @container.
+ */
+.hero {
+  display: grid;
+  grid-template-columns: 560px 480px;
+  gap: 64px;
+  align-items: center;
+  padding: 96px 64px;
+  background-color: var(--color-surface-muted);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 560px;
+}
+
+.title {
+  font-size: 56px;
+  line-height: 60px;
+  letter-spacing: -1px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 20px;
+  line-height: 32px;
+  color: var(--color-text-muted);
+  width: 520px;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.media {
+  width: 480px;
+}
+
+.image {
+  width: 480px;
+  min-width: 480px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.eyebrow {
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--color-accent);
+}

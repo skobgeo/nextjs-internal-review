@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" width="640" height="420" role="img" aria-label="Lumen dashboard">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eef2ff" />
+      <stop offset="100%" stop-color="#e0e7ff" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="420" rx="18" fill="url(#bg)" />
+  <rect x="32" y="32" width="576" height="56" rx="10" fill="#ffffff" />
+  <circle cx="60" cy="60" r="8" fill="#4f46e5" />
+  <rect x="80" y="52" width="120" height="16" rx="8" fill="#c7d2fe" />
+  <rect x="32" y="108" width="272" height="150" rx="12" fill="#ffffff" />
+  <polyline points="56,230 104,196 152,208 200,160 248,172 280,132" fill="none" stroke="#4f46e5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="320" y="108" width="288" height="150" rx="12" fill="#ffffff" />
+  <rect x="344" y="212" width="40" height="28" rx="6" fill="#a5b4fc" />
+  <rect x="396" y="184" width="40" height="56" rx="6" fill="#818cf8" />
+  <rect x="448" y="156" width="40" height="84" rx="6" fill="#6366f1" />
+  <rect x="500" y="132" width="40" height="108" rx="6" fill="#4f46e5" />
+  <rect x="32" y="278" width="576" height="110" rx="12" fill="#ffffff" />
+  <rect x="56" y="302" width="180" height="14" rx="7" fill="#e2e8f0" />
+  <rect x="56" y="330" width="320" height="14" rx="7" fill="#e2e8f0" />
+  <rect x="56" y="358" width="240" height="14" rx="7" fill="#e2e8f0" />
+</svg>

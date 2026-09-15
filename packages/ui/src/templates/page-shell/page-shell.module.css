@@ -1,0 +1,13 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100dvh;
+}
+
+.content {
+  flex: 1;
+}
+
+.narrow {
+  max-inline-size: 48rem;
+}

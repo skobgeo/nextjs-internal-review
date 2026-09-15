@@ -1,0 +1,94 @@
+# Установка и запуск
+
+## Требования
+
+Версии зафиксированы в `mise.toml`:
+
+| Инструмент | Версия |
+|---|---|
+| Node.js | 24.21.0 |
+| npm | 12.0.2 |
+| pnpm | 11.27.0 |
+
+```bash
+# если mise ещё нет
+curl https://mise.run | sh
+
+mise install     # поставит все три инструмента
+mise current     # покажет, что активировалось в этой директории
+```
+
+> Пакетный менеджер проекта — **pnpm**. npm зафиксирован в `mise.toml` для полноты
+> окружения, но командами проекта не используется; `node` приносит с собой свой
+> собственный npm, поэтому `npm -v` в оболочке может показать версию из состава Node.
+> Явно нужную версию всегда можно получить через `mise exec npm@12.0.2 -- npm -v`.
+
+## Запуск
+
+```bash
+pnpm install
+pnpm dev
+```
+
+`pnpm dev` через turborepo поднимает оба приложения параллельно:
+
+| Приложение | Порт | Адрес |
+|---|---|---|
+| `@repo/web` (Next.js 16) | 3000 | http://localhost:3000 |
+| `@repo/api` (Fastify 5) | 3100 | http://localhost:3100 |
+| Swagger UI | 3100 | http://localhost:3100/docs |
+
+Переменные окружения лежат в блоке `[env]` файла `mise.toml` и подставляются автоматически
+при входе в директорию проекта. У каждой в коде есть дефолт, поэтому проект поднимается
+и без mise.
+
+## База данных
+
+SQLite-файл создаётся при первом старте API в `apps/api/data/review.sqlite`
+и сразу наполняется демо-контентом. Файл в git не хранится.
+
+```bash
+pnpm db:seed    # засеять, если база пустая (идемпотентно)
+pnpm db:reset   # удалить файл и засеять заново
+```
+
+Схема создаётся идемпотентным DDL в `apps/api/src/db/client.ts`, запросы — через Drizzle ORM
+(`apps/api/src/db/schema.ts`). Отдельный шаг миграций для стенда не нужен.
+
+## Ожидаемое состояние на старте
+
+```bash
+pnpm typecheck   # зелёный
+pnpm lint        # зелёный (3 предупреждения — они по делу)
+pnpm build       # зелёный
+pnpm test        # КРАСНЫЙ: 47 падающих тестов — это задания сессии 1
+```
+
+## Если что-то не так
+
+**Порт занят.** `lsof -ti:3000 | xargs kill` (то же для 3100). Порты можно поменять
+переменными `WEB_PORT` / `API_PORT`.
+
+**`better-sqlite3` не собирается.** Нативный модуль требует разрешения на сборку;
+оно уже дано в `pnpm-workspace.yaml` (`allowBuilds`). При проблемах:
+`pnpm rebuild better-sqlite3`.
+
+**Страницы отдают пустой контент.** Скорее всего не поднялся API — проверьте
+http://localhost:3100/health и логи `@repo/api` в выводе `pnpm dev`.
+
+**Кэш turbo мешает.** `rm -rf .turbo apps/*/.turbo packages/*/.turbo`.
+
+**Next ведёт себя странно после правок конфига.** `rm -rf apps/web/.next`.
+
+## Полезное во время сессии
+
+```bash
+pnpm tasks                # где какие задания лежат
+pnpm tasks S3-02          # конкретное задание
+pnpm test:core            # watch-режим тестов пакета core
+pnpm --filter @repo/api dev   # только бэкенд
+pnpm --filter @repo/web dev   # только фронтенд
+
+curl -s "localhost:3100/api/articles?locale=ru&per_page=2" | jq
+curl -si "localhost:3100/api/content/home?locale=xx" | grep -i content-language
+```

@@ -1,0 +1,17 @@
+[tools]
+node = "24.21.0"
+npm = "12.0.2"
+pnpm = "11.27.0"
+
+# Переменные окружения для обеих аппок. mise подставляет их при входе в директорию,
+# в коде на все эти значения есть дефолты — проект поднимется и без mise.
+[env]
+API_PORT = "3100"
+WEB_PORT = "3000"
+
+NEXT_PUBLIC_SITE_URL = "http://localhost:3000"
+NEXT_PUBLIC_API_URL = "http://localhost:3100"
+API_INTERNAL_URL = "http://localhost:3100"
+
+# Серверный секрет. НЕ должен попадать в клиентский бандл — см. задание S3-01.
+CMS_API_TOKEN = "dev-only-secret-do-not-ship-to-client"

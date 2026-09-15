@@ -1,0 +1,45 @@
+/**
+ * [S2-03] Сетка статей.
+ *
+ * Вёрстка досталась «по наследству»: float, фиксированные ширины карточек и
+ * clearfix. На планшете карточки разъезжаются, на мобильном вылезают за экран,
+ * последняя колонка прижата к краю.
+ *
+ * Задача: переписать на CSS Grid с автоподбором колонок, убрать фиксированные
+ * ширины и клирфиксы, привести обложку к предсказуемым пропорциям (чтобы
+ * карточка не «прыгала» при загрузке картинки).
+ */
+.section {
+  display: block;
+  padding-block: var(--space-2xl);
+}
+
+.header {
+  margin-bottom: var(--space-md);
+}
+
+.grid {
+  width: 1088px;
+  margin: 0 auto;
+}
+
+.grid::after {
+  content: '';
+  display: block;
+  clear: both;
+}
+
+.item {
+  float: left;
+  width: 340px;
+  margin-right: 24px;
+  margin-bottom: 24px;
+}
+
+.item:nth-child(3n) {
+  margin-right: 0;
+}
+
+.empty {
+  color: var(--color-text-muted);
+}

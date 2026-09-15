@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" width="680" height="360" role="img" aria-label="Internationalisation">
+  <rect width="680" height="360" fill="#e0f2fe" />
+  <circle cx="340" cy="180" r="120" fill="none" stroke="#0284c7" stroke-width="10" />
+  <ellipse cx="340" cy="180" rx="50" ry="120" fill="none" stroke="#0284c7" stroke-width="8" />
+  <path d="M220 180h240M250 120h180M250 240h180" stroke="#0284c7" stroke-width="8" stroke-linecap="round" />
+</svg>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360" width="680" height="360" role="img" aria-label="Core Web Vitals">
+  <rect width="680" height="360" fill="#ecfdf5" />
+  <polyline points="80,280 180,220 280,240 380,150 480,170 600,90" fill="none" stroke="#16a34a" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="600" cy="90" r="16" fill="#16a34a" />
+</svg>
