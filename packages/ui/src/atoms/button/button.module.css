@@ -1,4 +1,4 @@
-/* [S2-01] Стилей здесь почти нет: всё живёт в inline-style внутри button.tsx. */
+/* [S2-01] Стили кнопки. */
 .button {
   display: inline-block !important;
   text-decoration: none;

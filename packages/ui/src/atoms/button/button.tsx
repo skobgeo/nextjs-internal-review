@@ -7,19 +7,15 @@ export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 /**
  * [S2-01] Атом «кнопка».
  *
- * Что здесь не так (и что нужно исправить):
- *  1. цвета, отступы и радиусы захардкожены в inline-стилях — тема и токены
- *     на кнопку не действуют;
- *  2. варианты собираются цепочкой `if`, добавить размер или новый вариант
- *     можно только копипастой;
- *  3. `outline: none` убил видимый фокус, а `!important` в CSS не даёт его вернуть;
- *  4. ссылка-кнопка (`ButtonLink` ниже) дублирует те же стили ещё раз.
+ * Кнопка работает и выглядит как в макете, но нарушает правило ui-kit:
+ * оформление живёт не в CSS на токенах. Проверьте её клавиатурой и попробуйте
+ * добавить размер `sm` — станет понятно, что переделывать.
  *
  * Задача: перенести оформление в `button.module.css` на дизайн-токены,
  * варианты и размеры выражать через `data-`атрибуты или классы-модификаторы,
- * вернуть `:focus-visible`, добавить проп `size` ('sm' | 'md' | 'lg')
- * и свести `Button`/`ButtonLink` к одному полиморфному компоненту
- * (дженерик-проп `as`), не потеряв типизацию нативных атрибутов.
+ * добавить проп `size` ('sm' | 'md' | 'lg') и свести `Button`/`ButtonLink`
+ * к одному полиморфному компоненту (дженерик-проп `as`), не потеряв
+ * типизацию нативных атрибутов.
  */
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly variant?: ButtonVariant;
@@ -61,7 +57,7 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
   readonly children: ReactNode;
 }
 
-/** Та же кнопка, но ссылкой. Стили скопированы — см. пункт 4 выше. */
+/** Та же кнопка, но ссылкой. */
 export function ButtonLink({ variant = 'primary', children, style, ...rest }: ButtonLinkProps) {
   return (
     <a className={styles.button} style={{ ...baseStyle, ...variantStyle(variant), ...style }} {...rest}>
