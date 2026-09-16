@@ -93,7 +93,7 @@
   --transition-fast: 120ms ease;
 }
 
-/* [S2-B1] Бонус: тёмная тема. Переопределяются ТОЛЬКО семантические роли. */
+/* Тёмная тема: переопределяются ТОЛЬКО семантические роли. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --color-surface: var(--color-neutral-900);

@@ -1,12 +1,19 @@
 import { Container } from '../../atoms/layout/layout';
-import { Icon } from '../../atoms/icon/icon';
 import { DEFAULT_LINK, type LinkComponent } from '../../lib/link';
 import styles from './site-footer.module.css';
+
+export interface FooterLink {
+  readonly id: string;
+  readonly title: string;
+  readonly href: string;
+  /** Внешняя ссылка (например, Swagger) — открывается обычным `<a>`. */
+  readonly external?: boolean;
+}
 
 export interface FooterColumn {
   readonly id: string;
   readonly title: string;
-  readonly links: readonly { readonly id: string; readonly title: string; readonly href: string }[];
+  readonly links: readonly FooterLink[];
 }
 
 export interface SiteFooterProps {
@@ -16,12 +23,6 @@ export interface SiteFooterProps {
   readonly linkComponent?: LinkComponent;
 }
 
-/**
- * [S2-04] Подвал сайта.
- *
- * Иконочные ссылки внизу прекрасно видны глазами и совершенно непонятны всем
- * остальным способам чтения страницы.
- */
 export function SiteFooter({ columns, copyright, note, linkComponent }: SiteFooterProps) {
   const Link = linkComponent ?? DEFAULT_LINK;
 
@@ -30,29 +31,34 @@ export function SiteFooter({ columns, copyright, note, linkComponent }: SiteFoot
       <Container>
         <div className={styles.inner}>
           {columns.map((column) => (
-            <div key={column.id} className={styles.column}>
-              <h2 className={styles.columnTitle}>{column.title}</h2>
-              {column.links.map((link) => (
-                <Link key={link.id} href={link.href} className={styles.link}>
-                  {link.title}
-                </Link>
-              ))}
-            </div>
+            <nav key={column.id} className={styles.column} aria-labelledby={`footer-${column.id}`}>
+              <h2 id={`footer-${column.id}`} className={styles.columnTitle}>
+                {column.title}
+              </h2>
+              <ul className={styles.list}>
+                {column.links.map((link) =>
+                  link.external ? (
+                    <li key={link.id}>
+                      <a href={link.href} className={styles.link} target="_blank" rel="noreferrer">
+                        {link.title}
+                      </a>
+                    </li>
+                  ) : (
+                    <li key={link.id}>
+                      <Link href={link.href} className={styles.link}>
+                        {link.title}
+                      </Link>
+                    </li>
+                  ),
+                )}
+              </ul>
+            </nav>
           ))}
         </div>
 
         <div className={styles.bottom}>
           <span>{copyright}</span>
           {note ? <span>{note}</span> : null}
-
-          <div className={styles.social}>
-            <a className={styles.socialLink} href="https://example.com/lumen">
-              <Icon name="globe" size={18} />
-            </a>
-            <a className={styles.socialLink} href="https://example.com/lumen/blog">
-              <Icon name="growth" size={18} />
-            </a>
-          </div>
         </div>
       </Container>
     </footer>

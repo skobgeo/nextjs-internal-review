@@ -13,5 +13,3 @@ NEXT_PUBLIC_SITE_URL = "http://localhost:3000"
 NEXT_PUBLIC_API_URL = "http://localhost:3100"
 API_INTERNAL_URL = "http://localhost:3100"
 
-# Серверный секрет. НЕ должен попадать в клиентский бандл — см. задание S3-01.
-CMS_API_TOKEN = "dev-only-secret-do-not-ship-to-client"

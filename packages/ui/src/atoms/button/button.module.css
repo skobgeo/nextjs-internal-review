@@ -1,16 +1,71 @@
-/* [S2-01] Стилей здесь почти нет: всё живёт в inline-style внутри button.tsx. */
 .button {
-  display: inline-block !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3xs);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
   text-decoration: none;
-  outline: none;
-  transition: opacity 120ms ease;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.button:hover {
-  opacity: 0.85 !important;
+.button[data-size='sm'] {
+  padding: var(--space-3xs) var(--space-xs);
+  font-size: var(--font-size-sm);
+}
+
+.button[data-size='md'] {
+  padding: var(--space-2xs) var(--space-sm);
+  font-size: var(--font-size-md);
+}
+
+.button[data-size='lg'] {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-lg);
+}
+
+.button[data-variant='primary'] {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+.button[data-variant='primary']:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.button[data-variant='secondary'] {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-accent);
+}
+
+.button[data-variant='secondary']:hover:not(:disabled) {
+  border-color: var(--color-accent);
+}
+
+.button[data-variant='ghost'] {
+  background-color: transparent;
+  color: var(--color-text);
+}
+
+.button[data-variant='ghost']:hover:not(:disabled) {
+  background-color: var(--color-surface-muted);
+}
+
+.button:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed !important;
+  opacity: 0.55;
+  cursor: not-allowed;
 }

@@ -11,7 +11,7 @@ import styles from './field.module.css';
 
 /**
  * Атомы формы. Они уже умеют сообщать о невалидности через `aria-invalid`,
- * но пользоваться этим должен вызывающий код — см. задание S2-04.
+ * но пользоваться этим должен вызывающий код — см. FormField в molecules.
  */
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {

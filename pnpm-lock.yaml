@@ -32,9 +32,6 @@ importers:
       '@repo/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       better-sqlite3:
         specifier: 13.0.3
         version: 13.0.3
@@ -202,13 +199,6 @@ importers:
   packages/typescript-config: {}
 
   packages/ui:
-    dependencies:
-      '@repo/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*

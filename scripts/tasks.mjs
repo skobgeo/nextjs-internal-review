@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 /**
- * Печатает список заданий, найденных по маркерам вида `[S1-03]` в исходниках.
+ * Печатает список заданий, найденных по маркерам вида `[T-03]` в исходниках.
  *
  * Использование:
  *   pnpm tasks           — все задания
- *   pnpm tasks S2        — только вторая сессия
- *   pnpm tasks S1-04     — конкретное задание
+ *   pnpm tasks T-04      — конкретное задание
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -14,13 +13,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const SKIP = new Set(['node_modules', '.next', '.turbo', '.git', 'dist', 'coverage', 'data', 'scripts']);
 const EXTENSIONS = /\.(ts|tsx|css|mjs)$/;
-const MARKER = /\[(S[123]-(?:B?\d{1,2}))\]/g;
+const MARKER = /\[(T-\d{2})\]/g;
 
-const SESSION_TITLES = {
-  S1: 'Сессия 1 — JavaScript, алгоритмы, TypeScript, валидация',
-  S2: 'Сессия 2 — HTML, CSS, адаптив, доступность, SEO',
-  S3: 'Сессия 3 — Next.js App Router',
-};
 
 function walk(dir, files = []) {
   for (const entry of readdirSync(dir)) {
@@ -61,16 +55,8 @@ if (found.size === 0) {
 }
 
 const ids = [...found.keys()].sort();
-let currentSession = '';
 
 for (const id of ids) {
-  const session = id.slice(0, 2);
-
-  if (session !== currentSession) {
-    currentSession = session;
-    console.log(`\n\x1b[1m${SESSION_TITLES[session] ?? session}\x1b[0m`);
-  }
-
   const places = found.get(id);
   console.log(`\n  \x1b[36m${id}\x1b[0m`);
 

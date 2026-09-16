@@ -9,11 +9,12 @@ export interface DebouncedFunction<TArgs extends unknown[], TThis = unknown> {
 }
 
 /**
- * [S1-03] Классический trailing-debounce: вызывает `fn` через `waitMs` после
- * ПОСЛЕДНЕГО обращения.
+ * [T-02] Классический trailing-debounce: вызывает `fn` через `waitMs` после
+ * ПОСЛЕДНЕГО обращения. Им пользуется поиск в блоге (`components/blog/search-box.tsx`).
  *
- * Реализация ниже написана «на глаз» и содержит ТРИ дефекта. Тесты показывают
- * симптомы; найдите причины и почините, не меняя публичный API.
+ * Реализация ниже написана «на глаз» и содержит ТРИ дефекта. Тесты
+ * (`pnpm test:core`) показывают симптомы; найдите причины и почините,
+ * не меняя публичный API.
  */
 export function debounce<TArgs extends unknown[], TThis = unknown>(
   fn: (this: TThis, ...args: TArgs) => void,

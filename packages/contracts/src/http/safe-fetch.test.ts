@@ -19,7 +19,7 @@ function jsonResponse(body: unknown, init?: ResponseInit): typeof fetch {
   ) as unknown as typeof fetch;
 }
 
-describe('[S1-07] safeFetch', () => {
+describe('safeFetch', () => {
   it('возвращает провалидированные данные при корректном ответе', async () => {
     const payload = { id: 1, slug: 'hello', published_at: '2026-01-01T00:00:00.000Z' };
 
