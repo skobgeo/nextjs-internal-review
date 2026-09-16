@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import { ok, type FetchFailure, type Result } from './result';
+import { err, ok, type FetchFailure, type Result } from './result';
 
 export interface SafeFetchOptions<TSchema extends z.ZodType> {
   /** Схема, описывающая ответ сервера. Именно она решает, доверяем мы данным или нет. */
@@ -11,24 +11,17 @@ export interface SafeFetchOptions<TSchema extends z.ZodType> {
 }
 
 /**
- * [S1-07] Типобезопасный HTTP-клиент.
+ * Типобезопасный HTTP-клиент: никогда не бросает, тип успешного результата
+ * выводится из схемы (`z.output<TSchema>`), успех — это ПРОВАЛИДИРОВАННЫЕ данные.
  *
- * Что нужно сделать:
- *  1. Дженерик `TSchema extends z.ZodType` должен выводить тип успешного результата
- *     из схемы (`z.output<TSchema>`) — без `any` и без ручного указания типа на вызове.
- *  2. Функция никогда не бросает исключение: любая проблема возвращается как
- *     `Result<…, FetchFailure>` с корректным `kind`:
- *       - `network`      — fetch отвалился (нет сети, CORS, abort);
- *       - `http`         — ответ пришёл, но статус не 2xx (тело по возможности приложить);
- *       - `invalid-json` — тело не распарсилось как JSON;
- *       - `schema`       — JSON распарсился, но не прошёл валидацию схемой.
- *         В `issues` должны попасть путь поля и сообщение по каждой проблеме.
- *  3. Успешный результат — это ВАЛИДИРОВАННЫЕ данные (`schema.safeParse`), а не `as`.
+ * Варианты ошибки различаются по `kind`, чтобы вызывающий код решал сам:
+ *  - `network`      — fetch отвалился (нет сети, CORS, abort);
+ *  - `http`         — ответ пришёл, но статус не 2xx (тело приложено, если разобралось);
+ *  - `invalid-json` — тело не распарсилось как JSON;
+ *  - `schema`       — JSON распарсился, но не прошёл валидацию схемой.
  *
- * Тесты: `pnpm --filter @repo/contracts test`
- *
- * Сейчас реализация «оптимистичная»: она приводит тело ответа к нужному типу через
- * `as` и делает вид, что всё в порядке. Ровно так этот код и написан в проде у многих.
+ * Обратите внимание: результат `getArticles()` в приложении зависит от того,
+ * какую схему сюда передали. `z.any()` на входе — `any` на выходе (см. задание T-01).
  */
 export async function safeFetch<TSchema extends z.ZodType>(
   input: string | URL,
@@ -36,8 +29,45 @@ export async function safeFetch<TSchema extends z.ZodType>(
 ): Promise<Result<z.output<TSchema>, FetchFailure>> {
   const doFetch = options.fetchImpl ?? fetch;
 
-  const response = await doFetch(input, options.init);
-  const body = await response.json();
+  let response: Response;
+  try {
+    response = await doFetch(input, options.init);
+  } catch (cause) {
+    return err({ kind: 'network', message: cause instanceof Error ? cause.message : String(cause), cause });
+  }
 
-  return ok(body as z.output<TSchema>);
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch (cause) {
+    if (!response.ok) {
+      return err({ kind: 'http', status: response.status, message: response.statusText || `HTTP ${response.status}` });
+    }
+
+    return err({ kind: 'invalid-json', message: cause instanceof Error ? cause.message : String(cause) });
+  }
+
+  if (!response.ok) {
+    return err({
+      kind: 'http',
+      status: response.status,
+      message: response.statusText || `HTTP ${response.status}`,
+      body,
+    });
+  }
+
+  const parsed = options.schema.safeParse(body);
+
+  if (!parsed.success) {
+    return err({
+      kind: 'schema',
+      message: 'Ответ не соответствует схеме',
+      issues: parsed.error.issues.map((issue) => ({
+        path: issue.path.map(String).join('.'),
+        message: issue.message,
+      })),
+    });
+  }
+
+  return ok(parsed.data as z.output<TSchema>);
 }

@@ -6,7 +6,6 @@
     "API_PORT",
     "WEB_PORT",
     "API_INTERNAL_URL",
-    "CMS_API_TOKEN",
     "NEXT_PUBLIC_API_URL",
     "NEXT_PUBLIC_SITE_URL"
   ],

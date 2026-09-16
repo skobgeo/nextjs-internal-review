@@ -1,0 +1,104 @@
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.cover {
+  display: block;
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background-color: var(--color-surface-muted);
+}
+
+/* Контейнер обложки для варианта с `fill` у next/image: место резервируется через aspect-ratio. */
+.coverFrame {
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  background-color: var(--color-surface-muted);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  padding: var(--space-sm);
+}
+
+.category {
+  align-self: flex-start;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-accent);
+  background-color: var(--color-accent-subtle);
+  padding: 0.15rem var(--space-2xs);
+  border-radius: var(--radius-pill);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+}
+
+.titleLink {
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+.titleLink:hover {
+  text-decoration: underline;
+}
+
+.titleLink:focus-visible {
+  outline: none;
+}
+
+/* Ссылка растянута на всю карточку — клик работает по любому месту,
+   при этом в DOM остаётся один настоящий якорь. */
+.titleLink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.excerpt {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin-block-start: auto;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.fallbackBadge {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-3xs);
+}

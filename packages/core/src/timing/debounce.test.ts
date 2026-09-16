@@ -10,7 +10,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('[S1-03] debounce', () => {
+describe('[T-02] debounce', () => {
   it('вызывает функцию один раз после паузы', () => {
     const spy = vi.fn();
     const debounced = debounce(spy, 100);

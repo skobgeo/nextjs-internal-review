@@ -13,12 +13,8 @@ import {
 
 import { env, isProduction } from './env';
 import { articleRoutes } from './routes/articles';
-import { contentRoutes } from './routes/content';
-import { experimentRoutes } from './routes/experiments';
 import { healthRoutes } from './routes/health';
-import { i18nRoutes } from './routes/i18n';
 import { leadRoutes } from './routes/leads';
-import { navigationRoutes } from './routes/navigation';
 
 /** `/name` → `name`, `/utm/source` → `utm.source` */
 function toFieldPath(instancePath: string): string {
@@ -44,7 +40,6 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: env.corsOrigins,
     credentials: true,
-    exposedHeaders: ['Content-Language'],
   });
 
   await app.register(rateLimit, {
@@ -59,24 +54,18 @@ export async function buildApp(): Promise<FastifyInstance> {
         title: 'Lumen Content API',
         version: '1.0.0',
         description: [
-          'Бэкенд стенда для интернал-ревью. Отдаёт контент страниц, статьи блога,',
-          'навигацию, словарь интерфейса и принимает заявки из формы.',
+          'Бэкенд стенда для интернал-ревью. Отдаёт статьи блога,',
+          'принимает заявки из формы и показывает, что сохранилось.',
           '',
           '**Соглашения**',
           '- поля ответов — `snake_case`, даты — строки ISO 8601 в UTC;',
-          '- списки приходят конвертом `{ items, total, page, per_page }`;',
-          '- локаль выбирается через `?locale=`, затем `Accept-Language`, затем дефолт `en`;',
-          '- фактический язык ответа всегда указан в заголовке `Content-Language`,',
-          '  ответы помечены `Vary: Accept-Language`.',
+          '- списки приходят конвертом `{ items, total, page, per_page }`.',
         ].join('\n'),
       },
       servers: [{ url: `http://localhost:${env.port}`, description: 'Локальная разработка' }],
       tags: [
-        { name: 'content', description: 'Контент страниц и навигация' },
-        { name: 'articles', description: 'Блог' },
-        { name: 'i18n', description: 'Словарь интерфейса' },
-        { name: 'growth', description: 'Эксперименты' },
-        { name: 'leads', description: 'Форма обратной связи' },
+        { name: 'articles', description: 'Блог: список с поиском и пагинацией, статья' },
+        { name: 'leads', description: 'Форма обратной связи: приём и просмотр заявок' },
         { name: 'system', description: 'Служебные ручки' },
       ],
     },
@@ -92,11 +81,11 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (hasZodFastifySchemaValidationErrors(error)) {
       return reply.code(422).send({
         error: 'validation_error',
-        message: 'Тело запроса не прошло валидацию',
+        message: 'Request body failed validation',
         statusCode: 422,
         errors: error.validation.map((issue) => ({
           path: toFieldPath(issue.instancePath),
-          message: issue.message ?? 'validation.unknown',
+          message: issue.message ?? 'Something is wrong with this field.',
         })),
       });
     }
@@ -106,7 +95,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
       return reply.code(500).send({
         error: 'response_serialization_error',
-        message: 'Ответ не соответствует схеме',
+        message: 'Response does not match its schema',
         statusCode: 500,
       });
     }
@@ -120,7 +109,7 @@ export async function buildApp(): Promise<FastifyInstance> {
 
     return reply.code(statusCode).send({
       error: fastifyError.code ?? 'internal_error',
-      message: statusCode >= 500 ? 'Внутренняя ошибка сервиса' : fastifyError.message,
+      message: statusCode >= 500 ? 'Internal server error' : fastifyError.message,
       statusCode,
     });
   });
@@ -128,17 +117,13 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.setNotFoundHandler((request, reply) =>
     reply.code(404).send({
       error: 'not_found',
-      message: `Маршрут ${request.method} ${request.url} не существует`,
+      message: `Route ${request.method} ${request.url} does not exist`,
       statusCode: 404,
     }),
   );
 
   await app.register(healthRoutes);
-  await app.register(contentRoutes);
-  await app.register(navigationRoutes);
   await app.register(articleRoutes);
-  await app.register(i18nRoutes);
-  await app.register(experimentRoutes);
   await app.register(leadRoutes);
 
   return app;

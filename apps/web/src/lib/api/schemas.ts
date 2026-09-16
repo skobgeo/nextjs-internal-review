@@ -4,135 +4,77 @@ import { z } from 'zod';
  * Схемы ОТВЕТОВ бэкенда.
  *
  * Фронт не импортирует внутренние типы сервера — он описывает то, на что
- * рассчитывает, и проверяет это в рантайме. Контракт задокументирован
+ * рассчитывает, и проверяет это в рантайме через `safeFetch`. Всё, что
+ * не прошло схему, до компонентов не доходит. Контракт задокументирован
  * в Swagger: http://localhost:3100/docs
  */
 
-// --- контент страниц (пример того, как это должно выглядеть) ----------------
+// --- заявки (пример того, как должна выглядеть схема ответа) ------------------
 
-export const sectionItemSchema = z.object({
-  id: z.number().int(),
-  position: z.number().int(),
-  icon: z.string().nullable(),
-  value: z.string().nullable(),
-  fields: z.record(z.string(), z.string()),
-});
-
-export const sectionSchema = z.object({
-  id: z.number().int(),
-  kind: z.string(),
-  position: z.number().int(),
-  media_url: z.string().nullable(),
-  cta_href: z.string().nullable(),
-  fields: z.record(z.string(), z.string()),
-  items: z.array(sectionItemSchema),
-});
-
-export const pageContentSchema = z
+export const leadSummarySchema = z
   .object({
-    slug: z.string(),
-    kind: z.string(),
-    locale: z.string(),
-    requested_locale: z.string().nullable(),
-    used_fallback: z.boolean(),
-    sections: z.array(sectionSchema),
+    id: z.number().int(),
+    name: z.string(),
+    email: z.string(),
+    company: z.string().nullable(),
+    message: z.string(),
+    budget: z.string(),
+    created_at: z.string(),
   })
   .transform((raw) => ({
-    slug: raw.slug,
-    kind: raw.kind,
-    locale: raw.locale,
-    usedFallback: raw.used_fallback,
-    sections: raw.sections.map((section) => ({
-      id: section.id,
-      kind: section.kind,
-      position: section.position,
-      mediaUrl: section.media_url,
-      ctaHref: section.cta_href,
-      fields: section.fields,
-      items: section.items.map((item) => ({
-        id: item.id,
-        position: item.position,
-        icon: item.icon,
-        value: item.value,
-        fields: item.fields,
-      })),
-    })),
+    id: raw.id,
+    name: raw.name,
+    email: raw.email,
+    company: raw.company,
+    message: raw.message,
+    budget: raw.budget,
+    createdAt: new Date(raw.created_at),
   }));
 
-export type PageContent = z.output<typeof pageContentSchema>;
-export type PageSection = PageContent['sections'][number];
-
-// --- навигация ---------------------------------------------------------------
-
-export const navigationSchema = z
+export const leadListSchema = z
   .object({
-    locale: z.string(),
-    items: z.array(
-      z.object({
-        id: z.string(),
-        parent_id: z.string().nullable(),
-        slug: z.string(),
-        href: z.string(),
-        position: z.number().int(),
-        title: z.string(),
-      }),
-    ),
+    items: z.array(leadSummarySchema),
+    total: z.number().int(),
+    page: z.number().int(),
+    per_page: z.number().int(),
   })
   .transform((raw) => ({
-    locale: raw.locale,
-    items: raw.items.map((item) => ({
-      id: item.id,
-      parentId: item.parent_id,
-      slug: item.slug,
-      href: item.href,
-      position: item.position,
-      title: item.title,
-    })),
+    items: raw.items,
+    total: raw.total,
+    page: raw.page,
+    perPage: raw.per_page,
   }));
 
-export type Navigation = z.output<typeof navigationSchema>;
-
-// --- словарь интерфейса -------------------------------------------------------
-
-export const messagesSchema = z.object({
-  locale: z.string(),
-  requested_locale: z.string().nullable(),
-  messages: z.record(z.string(), z.string()),
-});
-
-// --- эксперименты -------------------------------------------------------------
-
-export const experimentsSchema = z
-  .object({
-    items: z.array(
-      z.object({
-        key: z.string(),
-        enabled: z.boolean(),
-        variants: z.array(z.object({ id: z.string(), weight: z.number() })),
-      }),
-    ),
-  })
-  .transform((raw) => raw.items);
-
-export type Experiment = z.output<typeof experimentsSchema>[number];
+export type LeadSummary = z.output<typeof leadSummarySchema>;
+export type LeadList = z.output<typeof leadListSchema>;
 
 // --- статьи -------------------------------------------------------------------
 
 /**
- * [S1-07] Схемы ответов блога.
+ * [T-01] Схемы ответов блога.
  *
- * Сейчас это заглушки: валидации нет, и всё, что приходит с бэкенда,
- * принимается на веру. Из-за этого страница блога уже показывает мусор —
- * откройте `/ru/blog` и сравните с ответом в Swagger.
+ * Сейчас это заглушки: `z.any()` пропускает всё, что пришло с бэкенда, и всё,
+ * что из него выводится ниже (`ArticleListItem`, `ArticleList`, `ArticleDetail`),
+ * тоже `any`. Компилятор молчит, а страница `/blog` уже показывает неправду —
+ * откройте её и сравните карточки с ответом `GET /api/articles` в Swagger.
  *
  * Задача:
- *  1. описать реальный ответ `GET /api/articles` (и `/api/articles/:slug`)
- *     так, как он задокументирован в Swagger;
- *  2. привести его к доменной модели через `.transform()`:
- *     snake_case → camelCase, `published_at` (строка ISO) → `Date`;
- *  3. проверить, что после исправления `safeFetch` возвращает `kind: 'schema'`,
- *     если бэкенд изменит контракт (сломайте поле в ответе и посмотрите).
+ *  1. описать реальные ответы `GET /api/articles` и `GET /api/articles/:slug`
+ *     так, как они задокументированы в Swagger (образец — `leadSummarySchema` выше);
+ *  2. привести их к доменной модели через `.transform()`: snake_case → camelCase,
+ *     `published_at` (строка ISO) → `Date`;
+ *  3. убедиться, что после этого типы ниже стали строгими, и починить всё,
+ *     что подсветит компилятор в `blog/page.tsx`, `blog/[slug]/page.tsx`
+ *     и `components/blog/*`;
+ *  4. подумать, где здесь просится дженерик: список статей и список заявок
+ *     приходят одинаковым конвертом `{ items, total, page, per_page }`.
  */
+export const articleListItemSchema = z.any();
+
 export const articleListSchema = z.any();
 
 export const articleDetailSchema = z.any();
+
+export type ArticleListItem = z.output<typeof articleListItemSchema>;
+export type ArticleList = z.output<typeof articleListSchema>;
+export type ArticleDetail = z.output<typeof articleDetailSchema>;

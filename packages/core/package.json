@@ -4,9 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./growth": "./src/growth/index.ts",
-    "./i18n": "./src/i18n/index.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",

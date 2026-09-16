@@ -1,23 +1,24 @@
 import type { MetadataRoute } from 'next';
 
-import { SITE_URL } from '@/lib/env';
+import { getArticles } from '@/lib/api/articles';
+import { absoluteUrl } from '@/lib/seo';
 
-/**
- * [S2-06] Карта сайта.
- *
- * Сейчас в ней три захардкоженных URL на одном языке. В ней нет:
- *  - страниц второй локали и связей `alternates.languages` (hreflang);
- *  - статей блога (а это основной источник органики);
- *  - юридических страниц;
- *  - осмысленных `lastModified` — у статей есть `updated_at`.
- *
- * Задача: собрать карту из реальных данных (`getArticleSlugs`, `getNavigation`),
- * добавить языковые альтернативы и подумать, как эта функция должна кэшироваться.
- */
-export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    { url: `${SITE_URL}/en`, priority: 1 },
-    { url: `${SITE_URL}/en/pricing`, priority: 0.8 },
-    { url: `${SITE_URL}/en/blog`, priority: 0.8 },
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const entries: MetadataRoute.Sitemap = [
+    { url: absoluteUrl('/'), priority: 1 },
+    { url: absoluteUrl('/blog'), priority: 0.8 },
+    { url: absoluteUrl('/contact'), priority: 0.8 },
   ];
+
+  const list = await getArticles({ perPage: 50 });
+
+  for (const article of list.items as { slug: string; updatedAt?: Date | string }[]) {
+    entries.push({
+      url: absoluteUrl(`/blog/${article.slug}`),
+      lastModified: article.updatedAt ? new Date(article.updatedAt) : undefined,
+      priority: 0.6,
+    });
+  }
+
+  return entries;
 }

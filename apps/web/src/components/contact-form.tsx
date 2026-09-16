@@ -1,131 +1,129 @@
 'use client';
 
-import { Button } from '@repo/ui';
-import { useState } from 'react';
+import { LEAD_BUDGETS, type LeadBudget } from '@repo/contracts';
+import { Button, Checkbox, FieldError, FormField, Input, Select, Textarea } from '@repo/ui';
+import Link from 'next/link';
+import { useActionState } from 'react';
 
-import { API_PUBLIC_URL } from '@/lib/env';
+import { submitContactForm } from '@/app/contact/actions';
+import { initialContactState } from '@/app/contact/form-state';
+import styles from './contact-form.module.css';
 
-export interface ContactFormLabels {
-  readonly title: string;
-  readonly description: string;
-  readonly name: string;
-  readonly namePlaceholder: string;
-  readonly email: string;
-  readonly emailPlaceholder: string;
-  readonly company: string;
-  readonly companyPlaceholder: string;
-  readonly budget: string;
-  readonly budgetUnknown: string;
-  readonly budgetLt10k: string;
-  readonly budget10k50k: string;
-  readonly budgetGt50k: string;
-  readonly message: string;
-  readonly messagePlaceholder: string;
-  readonly consent: string;
-  readonly submit: string;
-  readonly submitting: string;
-  readonly successTitle: string;
-  readonly successDescription: string;
-  readonly errorTitle: string;
-  readonly errorDescription: string;
-}
-
-export interface ContactFormProps {
-  readonly locale: string;
-  readonly labels: ContactFormLabels;
-}
+const BUDGET_LABELS: Readonly<Record<LeadBudget, string>> = {
+  unknown: 'Not sure yet',
+  lt10k: 'Under $10k',
+  '10k-50k': '$10k – $50k',
+  gt50k: 'Over $50k',
+};
 
 /**
- * [S3-04] + [S2-04] Форма обратной связи.
+ * [T-04] Форма обратной связи на Server Action + `useActionState`.
  *
- * Форма «работает»: данные уходят на бэкенд, при успехе показывается спасибо.
- * Но она отправляется вручную из браузера и поэтому:
- *  - не валидирует ввод до отправки и не показывает, какое поле не так —
- *    сервер отвечает 422 со списком полей, а мы выводим одну общую фразу;
- *  - кнопку можно нажать десять раз подряд;
- *  - без JavaScript не отправляется вообще;
- *  - подписи полей сделаны плейсхолдерами: текст пропадает, как только
- *    начинаешь печатать, а скринридер не понимает, что за поле перед ним;
- *  - состояния успеха и ошибки появляются молча — вспомогательные
- *    технологии о них не узнают;
- *  - honeypot и utm-метки не передаются, поэтому скоринг заявки на бэкенде
- *    работает вслепую.
+ * Разметка полей уже доступная (`FormField` связывает подпись, подсказку
+ * и ошибку), отправка работает без JavaScript. Не хватает состояния отправки,
+ * объявления результата вспомогательным технологиям и честных типов
+ * (см. `app/contact/actions.ts` и `form-state.ts`).
  *
- * Задача: перевести на Server Action `submitContactForm` + `useActionState`
- * (см. `app/[locale]/contact/actions.ts`) и починить доступность,
- * используя `FormField` из `@repo/ui`.
+ * [T-08] И один из контролов подписан не так, как остальные.
  */
-export function ContactForm({ locale, labels }: ContactFormProps) {
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+export function ContactForm() {
+  const [state, formAction] = useActionState(submitContactForm, initialContactState);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const fieldError = (field: string): string | undefined => state.fieldErrors?.[field]?.[0];
 
-    const formData = new FormData(event.currentTarget);
-    setStatus('sending');
-
-    const response = await fetch(`${API_PUBLIC_URL}/api/leads`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        name: formData.get('name'),
-        email: formData.get('email'),
-        company: formData.get('company'),
-        budget: formData.get('budget'),
-        message: formData.get('message'),
-        consent: formData.get('consent') === 'on',
-        locale,
-      }),
-    });
-
-    setStatus(response.ok ? 'success' : 'error');
-  }
-
-  if (status === 'success') {
+  if (state.status === 'success') {
     return (
-      <div>
-        <h2>{labels.successTitle}</h2>
-        <p>{labels.successDescription}</p>
+      <div className={styles.success}>
+        <h2>Request received</h2>
+        <p>A solutions engineer replies within one business day.</p>
+        <p>
+          <Link href="/admin/leads">See submitted requests →</Link>
+        </p>
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)', maxInlineSize: '36rem' }}
-    >
-      <h2>{labels.title}</h2>
-      <p>{labels.description}</p>
+    <form action={formAction} className={styles.form} noValidate>
+      <h2>Book a demo</h2>
+      <p className={styles.description}>Tell us about your funnel and we will bring the questions.</p>
 
-      <input name="name" placeholder={labels.namePlaceholder} />
+      <FormField id="name" label="Your name" error={fieldError('name')} required>
+        {(field) => (
+          <Input {...field} name="name" autoComplete="name" placeholder="Ada Lovelace" defaultValue={state.values?.name} />
+        )}
+      </FormField>
 
-      <input name="email" placeholder={labels.emailPlaceholder} />
+      <FormField id="email" label="Work email" error={fieldError('email')} required>
+        {(field) => (
+          <Input
+            {...field}
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="ada@company.com"
+            defaultValue={state.values?.email}
+          />
+        )}
+      </FormField>
 
-      <input name="company" placeholder={labels.companyPlaceholder} />
+      <FormField id="company" label="Company" error={fieldError('company')}>
+        {(field) => (
+          <Input
+            {...field}
+            name="company"
+            autoComplete="organization"
+            placeholder="Analytical Engines Ltd"
+            defaultValue={state.values?.company}
+          />
+        )}
+      </FormField>
 
-      <select name="budget" defaultValue="unknown">
-        <option value="unknown">{labels.budgetUnknown}</option>
-        <option value="lt10k">{labels.budgetLt10k}</option>
-        <option value="10k-50k">{labels.budget10k50k}</option>
-        <option value="gt50k">{labels.budgetGt50k}</option>
-      </select>
+      <FormField id="budget" label="Budget" error={fieldError('budget')}>
+        {(field) => (
+          <Select {...field} name="budget" defaultValue={state.values?.budget ?? 'unknown'}>
+            {LEAD_BUDGETS.map((budget) => (
+              <option key={budget} value={budget}>
+                {BUDGET_LABELS[budget]}
+              </option>
+            ))}
+          </Select>
+        )}
+      </FormField>
 
-      <textarea name="message" placeholder={labels.messagePlaceholder} rows={6} />
+      <FormField id="message" label="What are you trying to move?" error={fieldError('message')} required>
+        {(field) => (
+          <Textarea
+            {...field}
+            name="message"
+            rows={6}
+            placeholder="We want to understand why trial teams stop on day three…"
+            defaultValue={state.values?.message}
+          />
+        )}
+      </FormField>
 
-      <div style={{ display: 'flex', gap: 'var(--space-2xs)' }}>
-        <input type="checkbox" name="consent" />
-        <span>{labels.consent}</span>
+      <div className={styles.consentRow}>
+        <Checkbox name="consent" defaultChecked={state.values?.consent === 'on'} />
+        <span>I agree that Lumen may contact me about this request.</span>
+      </div>
+      {fieldError('consent') ? <FieldError>{fieldError('consent')}</FieldError> : null}
+
+      {/* Honeypot: скрыт от людей, боты его заполняют, бэкенд отвечает 422. */}
+      <div className={styles.honeypot} aria-hidden="true">
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
       </div>
 
-      {status === 'error' ? (
-        <div style={{ color: 'var(--color-danger)' }}>
-          <strong>{labels.errorTitle}</strong>
-          <p>{labels.errorDescription}</p>
+      {state.status === 'error' ? (
+        <div className={styles.formError}>
+          <strong>The request was not sent</strong>
+          <p>{state.formError ?? 'Check the highlighted fields and try again.'}</p>
         </div>
       ) : null}
 
-      <Button type="submit">{status === 'sending' ? labels.submitting : labels.submit}</Button>
+      <div>
+        <Button type="submit">Send request</Button>
+      </div>
     </form>
   );
 }
