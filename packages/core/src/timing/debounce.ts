@@ -10,40 +10,44 @@ export interface DebouncedFunction<TArgs extends unknown[], TThis = unknown> {
 
 /**
  * [T-02] Классический trailing-debounce: вызывает `fn` через `waitMs` после
- * ПОСЛЕДНЕГО обращения. Им пользуется поиск в блоге (`components/blog/search-box.tsx`).
+ * ПОСЛЕДНЕГО обращения, с аргументами и `this` последнего вызова.
+ * Им пользуется поиск в блоге (`components/blog/search-box.tsx`).
  *
- * Реализация ниже написана «на глаз» и содержит ТРИ дефекта. Тесты
- * (`pnpm test:core`) показывают симптомы; найдите причины и почините,
- * не меняя публичный API.
+ * Сама функция, `flush()` и `pending()` готовы и покрыты тестами.
+ * Не дописан `cancel()` — один тест `debounce` красный.
+ *
+ * Разобраться по ходу: что делает `fn.apply(this, args)` и почему здесь
+ * нельзя написать просто `fn(...args)`; зачем `this` описан в типах
+ * (`this: TThis`) и что было бы с обычной `function` вместо стрелки.
  */
 export function debounce<TArgs extends unknown[], TThis = unknown>(
   fn: (this: TThis, ...args: TArgs) => void,
   waitMs: number,
 ): DebouncedFunction<TArgs, TThis> {
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let pendingArgs: TArgs | null = null;
-  const invoke = fn as (...args: TArgs) => void;
+  let pendingCall: (() => void) | null = null;
+
+  const runPending = () => {
+    const call = pendingCall;
+    pendingCall = null;
+    call?.();
+  };
 
   const debounced = function (this: TThis, ...args: TArgs): void {
-    if (pendingArgs === null) {
-      pendingArgs = args;
-    }
+    // Каждый вызов перезаписывает и аргументы, и контекст — стреляет последний.
+    pendingCall = () => fn.apply(this, args);
 
-    if (timer !== null) {
-      clearTimeout(timer);
-    }
+    if (timer !== null) clearTimeout(timer);
 
     timer = setTimeout(() => {
       timer = null;
-      const callArgs = pendingArgs ?? ([] as unknown as TArgs);
-      pendingArgs = null;
-      invoke(...callArgs);
+      runPending();
     }, waitMs);
   } as DebouncedFunction<TArgs, TThis>;
 
   debounced.cancel = () => {
-    timer = null;
-    pendingArgs = null;
+    // [T-02] Написать: после cancel() отложенный вызов не выстреливает,
+    // а pending() возвращает false.
   };
 
   debounced.flush = () => {
@@ -51,9 +55,7 @@ export function debounce<TArgs extends unknown[], TThis = unknown>(
 
     clearTimeout(timer);
     timer = null;
-    const callArgs = pendingArgs ?? ([] as unknown as TArgs);
-    pendingArgs = null;
-    invoke(...callArgs);
+    runPending();
   };
 
   debounced.pending = () => timer !== null;
